@@ -1,0 +1,66 @@
+Application
+
+Kernel
+
+Dispatcher
+
+RouteCollection
+
+RouteCompiler
+
+RouteMatcher
+
+MiddlewareDispatcher
+
+ControllerDispatcher
+
+EventDispatcher
+
+ConfigRepository
+
+ServiceProvider
+
+Session
+
+Cookie
+
+Validator
+
+Filesystem
+
+Logger
+
+
+architecture propres
+
+src/
+│
+├── Http/
+│   ├── Request
+│   ├── Response
+│   ├── RedirectResponse
+│   └── JsonResponse
+│
+├── Routing/
+│   ├── Router
+│   ├── Route
+│   ├── RouteCollection
+│   ├── RouteCompiler
+│   ├── RouteMatcher
+│   ├── Dispatcher
+│   ├── Pipeline
+│   ├── Definition
+│   ├── Group
+│   └── Attributes
+│
+├── Container/
+│
+├── Contracts/
+│
+├── Exceptions/
+│
+├── Support/
+│
+├── Cache/
+│
+└── Helpers/

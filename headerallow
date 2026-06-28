@@ -1,0 +1,102 @@
+Access-Control-Allow-Origin
+Access-Control-Allow-Methods
+Access-Control-Allow-Headers
+Access-Control-Allow-Credentials
+Access-Control-Expose-Headers
+Access-Control-Max-Age
+
+Origin
+Access-Control-Request-Method
+Access-Control-Request-Headers
+
+Headers d''authentification
+Authorization
+WWW-Authenticate
+Proxy-Authorization
+
+Authorization: Bearer token
+Authorization: Basic username:password
+
+Headers de contenu
+Content-Type
+Content-Length
+Content-Encoding
+Content-Language
+Content-Disposition
+Content-Range
+Transfer-Encoding
+
+Headers de cache
+Cache-Control
+ETag
+Expires
+If-Modified-Since
+If-None-Match
+Last-Modified
+Pragma
+Age
+
+Headers de sécurité
+Strict-Transport-Security
+X-Frame-Options
+X-Content-Type-Options
+Content-Security-Policy
+Referrer-Policy
+Permissions-Policy
+Cross-Origin-Embedder-Policy
+Cross-Origin-Opener-Policy
+Cross-Origin-Resource-Policy
+
+Headers réseau
+Host
+Connection
+Keep-Alive
+Upgrade
+Via
+Forwarded
+X-Forwarded-For
+X-Forwarded-Host
+X-Forwarded-Proto
+
+Headers de cookies
+Cookie
+Set-Cookie
+
+Headers utilisés par les API REST
+Accept
+Authorization
+Content-Type
+If-Match
+If-None-Match
+Location
+Retry-After
+X-Request-ID
+X-Correlation-ID
+
+Headers personnalisés
+
+Tu peux créer n''importe quel header :
+
+X-App-Version
+X-Client-ID
+X-API-Key
+X-Trace-ID
+
+Dans PHP
+
+Pour récupérer tous les headers :
+
+$headers = getallheaders("");
+
+print_r($headers);
+
+
+interface RequestInterface {}
+interface ResponseInterface {}
+interface MiddlewareInterface {}
+interface ControllerInterface {}
+
+Exception types:
+- NotFoundException
+- MethodNotAllowedException
+- HttpException
