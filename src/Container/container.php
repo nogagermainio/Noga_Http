@@ -1,6 +1,5 @@
-<?php
-
-namespace Src\Core;
+<?php declare(strict_types=1);
+namespace Src\Container;
 
 use ReflectionClass;
 use ReflectionException;

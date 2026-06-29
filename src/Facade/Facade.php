@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Src\Core;
-
+namespace Src\Facade;
 abstract class Facade{
     
     protected static array $instance = [];
@@ -35,14 +34,14 @@ abstract class Facade{
             return $result;
         }
 
-        throw new \BadMethodCallException("invalide method $method");
+        throw new \BadMethodCallException("invalid method {$method}");
     }
 
      public static function __callStatic(mixed $method, mixed $args)
     {
              $instance =  self::getProcessInstance();
              if(!method_exists($instance,$method)){
-                throw new \BadMethodCallException("Method $method inconnue");
+                throw new \BadMethodCallException("Method {$method} Unknown");
              }
 
             return $instance->$method(...$args);

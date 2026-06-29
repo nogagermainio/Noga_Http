@@ -1,5 +1,4 @@
 <?php
-
 namespace Src\Routes\Tree;
 
 class RouteMatcher

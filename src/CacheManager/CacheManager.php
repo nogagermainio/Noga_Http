@@ -1,5 +1,6 @@
 <?php
-namespace Src\Core;
+namespace Src\CacheManager;
+
 use Generator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -14,10 +15,11 @@ class CacheManager
     private string $path;
     private ?string $debug = null;
     private ?int $delay    = null;
+    private string $basePath = __DIR__ . "/../../src/cache";
 
     public function __construct(string | array $key = "")
     {
-        $this->path      = __DIR__ . "/../../cache";
+        $this->path      = $this->basePath;
         $this->key       = $key;
         $this->data      = null;
         $this->debug     = "";
@@ -35,7 +37,7 @@ class CacheManager
         $clone = clone $this;
 
         $dir         = trim($dir, "/");
-        $clone->path = __DIR__ . "/../../cache/" . $dir;
+        $clone->path = $clone->basePath . $dir;
 
            if (
         ! is_dir($clone->path) &&
@@ -144,11 +146,12 @@ class CacheManager
 
     public static function getAll(string $dir): Generator
     {
+        $instance = new static();
         $dir = trim($dir, "/");
 
         $path = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator(
-                __DIR__ . "/../../cache/" . $dir,
+                $instance->basePath . $dir,
                 \FilesystemIterator::SKIP_DOTS
             )
         );

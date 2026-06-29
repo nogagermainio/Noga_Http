@@ -1,8 +1,8 @@
 <?php
-
-namespace Src\Core;
+namespace Src\Routing\Pipeline;
 
 use Closure;
+use Src\Container\Container;
 use Src\Exception\ClassNotFoundException;
 
 
