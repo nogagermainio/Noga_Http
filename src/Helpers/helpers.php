@@ -1,10 +1,8 @@
 <?php
 
-
-
-use Src\Core\ViewsManager;
-use Src\Request\Request;
-use Src\Response\Response;
+use Src\Https\Request\Request;
+use Src\Https\Response\Response;
+use Src\Views\ViewsManager;
 
  /**
   * Summary of App\Util\clean
@@ -60,7 +58,7 @@ function post(?string $postPath):Response
 }
 
 function request():Request{
-    return Request::getInstance();
+    return new Request();
 }
 
 function response(int $status = 200):Response{

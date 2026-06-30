@@ -6,23 +6,25 @@
  * Title : Router Http
  * 
  */
-namespace Src\Routes;
+namespace Src\Routing\Routes;
 
 use Closure;
-use Src\Core\CacheManager;
-use Src\Core\Container;
-use Src\Exception\ExceptionHttpHandle;
-use Src\Request\Request;
-use Src\Interfaces\Router\RouterInterface;
-use Src\Core\Pipeline;
-use Src\Exception\ControllerHttpException;
-use Src\Exception\HttpException;
-use Src\Exception\NotFoundHttpException;
+use Src\CacheManager\CacheManager;
+use Src\Container\Container;
+use Src\Contracts\Router\RouterInterface;
+use Src\Exceptions\ControllerHttpException;
+use Src\Exceptions\ExceptionHttpHandle;
+use Src\Exceptions\NotFoundHttpException;
+use Src\Https\Request\Request;
+use Src\Routing\Definition\DefinitionRouter;
+use Src\Routing\Matcher\Matcher;
+use Src\Routing\Pipeline\Pipeline;
+use Src\Routing\Traits\TraitRouter;
 use Throwable;
 
 class Router implements RouterInterface
 {
-  use \Src\Traits\Router\TraitRouter;
+  use TraitRouter;
 
     private array $routes = [];
 
@@ -42,19 +44,18 @@ class Router implements RouterInterface
 
     private string $method = "";
 
-    private string $path = "";
+    private string $currentPath = "";
 
     private ExceptionHttpHandle $exceptionHttpHandle;
 
     private ?Container $container = null;
 
     private ?CacheManager $cache = null;
-
     private ?Request $request = null;
 
     public function __construct()
     {
-        $this->controllerNamespace = "Test";
+        $this->controllerNamespace = "App\\Controller";
         $this->middlewareNamespace = "App\\Middleware";
         $this->container = new Container();
         $this->exceptionHttpHandle = new ExceptionHttpHandle();
@@ -69,7 +70,6 @@ class Router implements RouterInterface
     public function config(string $controllerNamespace,string $middlewareNamespace):static{  
        $this->controllerNamespace = $controllerNamespace;
        $this->middlewareNamespace = $middlewareNamespace;
-
         return $this;
     } 
 
@@ -82,7 +82,6 @@ class Router implements RouterInterface
     private function add(string $method, string $path): static
     {
         $this->method = $method;
-        $this->path   = $path;
         
         $this->currentRoutes = [
             "METHOD"      => $method,
@@ -185,6 +184,7 @@ class Router implements RouterInterface
             $this->currentRoutes['MIDDLEWARES'] ?? [],
             [$middleware]
         );
+
         return $this;
     }
 
@@ -228,10 +228,10 @@ class Router implements RouterInterface
      */
     public function register(): static
     {
-        
+
         $method = $this->currentRoutes["METHOD"];
         $path   = $this->currentRoutes['PATH'];
-
+        $this->currentPath = $path;
         if (empty($this->currentRoutes['CONTROLLER'])) {
            throw new ControllerHttpException("No controller in route : method : {$method} path : {$path} ");
         }
@@ -243,23 +243,12 @@ class Router implements RouterInterface
 
         $this->name[$path] = $this->currentRoutes['NAME'];
 
-        $this->currentRoutes['MIDDLEWARES'] = \array_merge(
-            $this->currentRoutes['MIDDLEWARES'] ?? [],
-            $this->collectGroupMiddleware()
-        );
-        $middlewares = [];
-        $middlewares = array_merge(
-            $middlewares,
-            $this->normalizeMiddleware($this->currentRoutes['MIDDLEWARES'])->toArray() ?? []
-        );
-
-        $pattern                        = $this->getPattern($this->currentRoutes);
+        $pattern                        = Matcher::handle($this->currentRoutes);
         $this->currentRoutes['KEYS']    = $pattern['keys'];
         $this->currentRoutes['PATTERN'] = $pattern['pattern'];
 
         $this->routes[$method][$path] = $this->currentRoutes;
         $this->routes[$method][$path]['CONTROLLER'] = $controller;
-        $this->routes[$method][$path]['MIDDLEWARES'] = $middlewares;
 
         $this->currentRoutes          = [];
         return $this;
@@ -273,23 +262,24 @@ class Router implements RouterInterface
         $method = $req->method();
         $uri    = $req->uri();
         $data   = $req->all();
+
         try{
           
         $cache  = $this->loadCache() ?? [];
         $this->routes = (isset($cache['data']) && ! empty($cache['data'])) ? $cache['data'] : $this->routes;
         $this->listRoutes[] = $this->routes;
 
-        foreach ($this->routes[$method] ?? [] as $route) {
-            [$ok, $params] = $this->match($route, $uri);
-
-            if (! $ok) {
-                continue;
+            $route = $this->routes[$method][$this->currentPath];
+   
+            if(!isset($route)){
+                 throw new NotFoundHttpException("Page Not Found {$uri} on this site");
             }
 
-            $req->add_name(
-                !empty($this->name[$uri]) ? $this->name[$uri] : '',
-                $this->listRoutes
-            );
+            [$ok, $params] = $this->match($route, $uri);
+            
+            if (! $ok) {
+                 throw new NotFoundHttpException("Invalid route {$route['PATH']}");
+            }
 
             $globalsMiddleware = array_merge(
                 $this->globalMiddleware['ALL'] ?? [],
@@ -298,10 +288,10 @@ class Router implements RouterInterface
 
             $middleware = array_merge(
                 $globalsMiddleware ?? [],
-                $route['MIDDLEWARES'] ?? []
+                $this->resolveDefinition($route['MIDDLEWARES'],
+                !empty($this->runtimeMiddlewares[$uri]) ? $this->runtimeMiddlewares[$uri] : null) ?? []
             );
             
-
                 $pipeline = new Pipeline(
                     $middleware,
                     $this->resolveDefinition(
@@ -312,9 +302,6 @@ class Router implements RouterInterface
 
                 $result = $pipeline->run($params, $data);
                 return $result;  
-        }
-
-            throw new NotFoundHttpException("Page Not Found {$uri} on this site");
 
         } catch (Throwable $e) {
             return $this->exceptionHttpHandle->handle($e);
@@ -368,7 +355,7 @@ class Router implements RouterInterface
      */
     private function req(): Request
     {
-        return $this->request ??= Request::getInstance();
+        return $this->request ??= new Request();
     }
 
 }

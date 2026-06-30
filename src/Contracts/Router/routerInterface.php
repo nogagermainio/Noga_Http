@@ -1,7 +1,5 @@
 <?php
-namespace Src\Interfaces\Router;
-
-use Src\Response\Response;
+namespace Src\Contracts\Router;
 
 interface RouterInterface
 {

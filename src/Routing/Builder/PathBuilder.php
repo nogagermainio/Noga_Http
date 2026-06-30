@@ -9,10 +9,10 @@ class PathBuilder{
     )
     {}
 
-    public function normalize(string $path):string{
+    public function normalize():string{
          $paths = '';
-        if (str_contains($path, '.')) {
-            $paths = explode('.', trim($path, '/'));
+        if (str_contains($this->path, '.')) {
+            $paths = explode('.', trim($this->path, '/'));
             $paths = implode('/', $paths);
 
         } else {
@@ -24,14 +24,13 @@ class PathBuilder{
 
     public function finalPath():string{
         $prefix = '';
-        $paths  = '';
         foreach ($this->groupStack as $group) {
             $prefix .= $group['prefix'];
         }
 
-        $paths = "$prefix/$this->path";
+        $this->path = "$prefix/$this->path";
 
-        return $this->normalize($paths);
+        return $this->normalize();
     }
 
 

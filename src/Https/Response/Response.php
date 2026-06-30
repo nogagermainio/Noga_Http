@@ -6,9 +6,9 @@
  * Title : Response http 
  */
 
-namespace Src\Response;
+namespace Src\Https\Response;
 
-use Src\Interfaces\Response\ResponseInterface;
+use Src\Contracts\Response\ResponseInterface;
 
 class Response implements ResponseInterface
 {
@@ -44,9 +44,9 @@ class Response implements ResponseInterface
     /**
      * Summary of status
      * @param int $status
-     * @return Response
+     * @return static
      */
-    public function status(int $status = 200) : Response
+    public function status(int $status = 200) : static
     {
         $this->status = $status;
         return $this;

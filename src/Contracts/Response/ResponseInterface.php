@@ -1,5 +1,5 @@
 <?php
-namespace Src\Interfaces\Response;
+namespace Src\Contracts\Response;
 
 interface ResponseInterface
 {
@@ -15,9 +15,9 @@ interface ResponseInterface
     /**
      * Summary of status
      * @param int $status
-     * @return \Src\Response\Response
+     * @return static
      */
-    public function status(int $status = 200) : \Src\Response\Response;
+    public function status(int $status = 200) : static;
 
     /**
      * Summary of json

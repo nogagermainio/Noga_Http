@@ -1,11 +1,11 @@
 <?php
-namespace Src\Routes\Definition;
+namespace Src\Routing\Definition;
 
 
 class Definition{
     public function __construct(
         public DefinitionType $type,
-        public array $execute = [],
+        public array|string|null $execute = null,
         public mixed $runtime = null
     ){}
 

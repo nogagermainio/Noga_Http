@@ -1,8 +1,8 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 use InvalidArgumentException;
-use Src\Response\Response;
+use Src\Https\Response\Response;
 use Throwable;
 
 class ExceptionHttpHandle{

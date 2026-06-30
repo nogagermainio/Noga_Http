@@ -7,17 +7,28 @@ class Matcher{
     private string $regexRouter = "#\{(\w+)(?::([^}]+))?\}#";
     private string $defaultRegexParams = "([^/]+)";
     private array $router = [];
-    private string $uri = "";
-    private array $params = [];
     private array $keys = [];
-    private ?CacheManager $cacheManager = null;
+    private string $keyData = "";
 
-    public function __construct(array $router,string $uri)
+    public function __construct(array $router)
     {
         $this->router = $router;
-        $this->uri = $uri;
+        $this->keyData = $this->hash(
+            $this->router['PATH'].(implode(
+                ',',
+                $this->router['WHERE']) ?? "")
+            );
     }
 
+    public static function handle(array $router):array{
+        $instance = new static($router);
+
+        $cache = $instance->loadCache($instance->keyData) ?? [];
+
+       return (isset($cache) && !empty($cache)) ?
+              $cache :
+              $instance->splitUri();
+    }
 
     public function splitUri():array{
         \preg_match_all(
@@ -39,43 +50,60 @@ class Matcher{
             },
             $this->router['PATH']
         );
+        $data[$this->keyData] = ['pattern'=>"#^$pattern$#",'keys'=>$this->keys] ?? [];
 
-        return[
-            'pattern'=>"#^$pattern$#",
-            "keys"=>$this->keys
-        ];
+        $this->addCache($data);
+
+        return ['pattern'=>"#^$pattern$#",'keys'=>$this->keys[1] ?? []];
     }
 
 
-    public function match():array{
-        if(!preg_match($this->router['PATTERN'],$this->uri,$m)){
-            return [false,[]];
-        }
+    // public function match(array $router,string $uri):array{
 
-        \array_shift($m);
+    //     if(!preg_match($router['PATTERN'],$uri,$m)){
+    //         return [false,[]];
+    //     }
+
+    //     \array_shift($m);
 
       
-        $this->keys = $this->router['KEYS'];
+    //     $this->keys = $router['KEYS'];
 
-        $m = \array_slice(
-            $m,
-            0,
-            count($this->keys)
-        );
+    //     $m = \array_slice(
+    //         $m,
+    //         0,
+    //         count($this->keys)
+    //     );
 
-        if(count($this->keys) !== count($m)){
-            return [false,[]];
-        }
+    //     if(count($this->keys) !== count($m)){
+    //         return [false,[]];
+    //     }
 
-        $this->params = $this->keys ? \array_combine($this->keys,$m) : [];
+    //     $this->params = $this->keys ? \array_combine($this->keys,$m) : [];
 
-        return [true,$this->params];
+    //     return [true,$this->params];
 
-    }
+    // }
 
     private function cache():CacheManager{
-       return $this->cacheManager = CacheManager::key("matcher")
+       return CacheManager::key("matcher")
         ->dir("match");
+    }
+
+    private function addCache(array $data):void{
+            $this->cache()
+             ->signature($data)
+             ->data($data)
+             ->put();    
+    }
+
+    private function loadCache(string $key):array{
+        $data = $this->cache()->get() ?? [];
+        return isset($data[$key]) ? $data[$key] : [];
+    }
+
+    private function hash(string $key):string{
+       return \hash('xxh128',$key); 
     }
 
 

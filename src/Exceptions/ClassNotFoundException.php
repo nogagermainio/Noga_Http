@@ -1,5 +1,5 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 class ClassNotFoundException extends HttpException{
     public function __construct(string $message = "Class Not Found !")

@@ -1,7 +1,7 @@
 <?php
 namespace Test;
 use Closure;
-use Src\Exception\MiddlewareHttpException;
+use Src\Exceptions\MiddlewareHttpException;
 
 class Middleware{
     public function index($params,$data,Closure $next){

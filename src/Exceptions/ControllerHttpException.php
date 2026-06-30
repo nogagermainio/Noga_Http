@@ -1,5 +1,5 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 class ControllerHttpException extends HttpException{
     public function __construct(string $message = 'Controller not Allowed'){

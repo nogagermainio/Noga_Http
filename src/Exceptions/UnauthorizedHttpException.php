@@ -1,5 +1,5 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 class UnauthorizedHttpException extends HttpException{
   

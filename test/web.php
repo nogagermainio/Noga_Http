@@ -4,7 +4,6 @@ use Src\Routes;
 use Test\Cont;
 use Test\Controller;
 use Test\Middleware;
-use Test\NewCont;
 
 function noga(){
 return response()->json(['noga']);
@@ -38,7 +37,3 @@ Routes::get('/cont')
 Routes::get('/conts')
 ->controller(Cont::class)
 ->name('ngsf');
-
-Routes::get('/con')
-->controller(NewCont::class)
-->name('gale');

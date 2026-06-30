@@ -37,7 +37,7 @@ class CacheManager
         $clone = clone $this;
 
         $dir         = trim($dir, "/");
-        $clone->path = $clone->basePath . $dir;
+        $clone->path = "{$clone->basePath}/{$dir}";
 
            if (
         ! is_dir($clone->path) &&

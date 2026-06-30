@@ -1,10 +1,9 @@
 <?php
 namespace Src;
 
-use Closure;
-use Src\Routes\Router as HttpRouter;
-use Src\Core\Facade;
 use Override;
+use Src\Facade\Facade;
+use Src\Routing\Routes\Router as HttpRouter;
 
 /**
  * Summary of Router

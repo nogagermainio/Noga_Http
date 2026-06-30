@@ -1,10 +1,11 @@
 <?php
-
-namespace Src\Routes\Definition;
+namespace Src\Routing\Parsing;
 
 use Closure;
-use Src\Exception\ClassMethodUndefined;
-use Src\Exception\ClassNotFoundException;
+use Src\Exceptions\ClassMethodUndefined;
+use Src\Exceptions\ClassNotFoundException;
+use Src\Routing\Definition\Definition;
+use Src\Routing\Definition\DefinitionType;
 
 class Parse
 {
@@ -13,34 +14,46 @@ class Parse
         private string $namespaces
     ) {}
 
+    /**
+     * Summary of handle
+     * @return array|Definition
+     */
     public function handle(): Definition
     {
-        $d = $this->data[0] ?? null;
-        
-        return match (true) {
+        $data = [];
+        foreach($this->data as $d){
+        $data = match (true) {
 
             $d === null =>
                 $this->parseDefine(DefinitionType::Null),
 
-            is_string($d) =>
+            \is_string($d) =>
                 $this->parseString($d),
 
-            is_array($d) =>
+            \is_array($d) =>
                 $this->parseClassMethod($d),
 
             $d instanceof Closure =>
                 $this->parseClosure($d),
 
-            is_object($d) && is_callable($d) =>
+            \is_object($d) && is_callable($d) =>
                 $this->parseInvokable($d),
 
             default =>
                 $this->parseDefine(DefinitionType::Null),
         };
+
+        }
+
+        return  $data;
     }
 
     /**
      * Closure
+     *
+     * Summary of parseClosure
+     * @param Closure $closure
+     * @return Definition
      */
     private function parseClosure(Closure $closure): Definition
     {
@@ -52,6 +65,10 @@ class Parse
 
     /**
      * Invokable object
+     *
+     * Summary of parseInvokable
+     * @param object $controller
+     * @return Definition
      */
     private function parseInvokable(object $controller): Definition
     {
@@ -63,17 +80,27 @@ class Parse
 
     /**
      * Global function
+     *
+     * Summary of parseFunction
+     * @param string $function
+     * @return Definition
      */
     private function parseFunction(string $function): Definition
     {
         return $this->parseDefine(
             type: DefinitionType::Function,
-            execute: [$function]
+            execute: $function
         );
     }
 
     /**
      * [Controller::class,'method']
+     * 
+     * Summary of parseClassMethod
+     * @param array $value
+     * @throws ClassNotFoundException
+     * @throws ClassMethodUndefined
+     * @return Definition
      */
     private function parseClassMethod(array $value): Definition
     {
@@ -113,7 +140,11 @@ class Parse
     }
 
     /**
-     * "Controller.index"
+     * Summary of parseSpecialValues
+     * @param string $value
+     * @throws ClassNotFoundException
+     * @throws ClassMethodUndefined
+     * @return Definition
      */
     private function parseSpecialValues(string $value): Definition
     {
@@ -135,6 +166,7 @@ class Parse
             );
         }
 
+        
         return $this->parseDefine(
             type: DefinitionType::ClassMethod,
             execute: [$class, $method]
@@ -142,7 +174,9 @@ class Parse
     }
 
     /**
-     * String parser
+     * Summary of parseString
+     * @param string $value
+     * @return Definition
      */
     private function parseString(string $value): Definition
     {
@@ -169,9 +203,16 @@ class Parse
         return $this->parseSpecialValues($value);
     }
 
+    /**
+     * Summary of parseDefine
+     * @param DefinitionType $type
+     * @param array|string|null $execute
+     * @param mixed $runtime
+     * @return Definition
+     */
     private function parseDefine(
         DefinitionType $type,
-        array $execute = [],
+        array|string|null $execute = null,
         ?callable $runtime = null
     ): Definition {
 

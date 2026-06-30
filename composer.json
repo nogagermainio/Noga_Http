@@ -11,7 +11,7 @@
      "Test\\":"test\\"
     },
     "files":[
-      "src/core/helpers.php"
+      "src/Helpers/helpers.php"
     ]
   },
   "config": {

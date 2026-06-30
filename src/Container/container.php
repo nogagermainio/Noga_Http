@@ -21,7 +21,7 @@ class Container
     /**
      * Singleton getter
      */
-    public function get(string $abstract): object
+    public function get(?string $abstract): object
     {
         $concrete = $this->bindings[$abstract] ?? $abstract;
 

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
-namespace Src\Traits\Router;
+namespace Src\Routing\Traits;
 
-use Closure;
-use Src\Routes\Definition\Definition;
-use Src\Routes\Definition\DefinitionType;
-use Src\Routes\Definition\Parse;
+
+use Src\Routing\Definition\Definition;
+use Src\Routing\Definition\DefinitionType;
+use Src\Routing\Parsing\Parse;
 
 trait TraitRouter
 {
@@ -12,12 +12,9 @@ trait TraitRouter
     private string $controllerNamespace = "";
     private string $middlewareNamespace = "";
     private ?Definition $definition = null;
-    private string $regexRoutes = "#\{(\w+)(?::([^}]+))?\}#";
-    private string $defaultRegex = "([^/]+)";
 
     private function match(array $route, string $uri): array
-    {
-
+    {          
         if (! preg_match($route['PATTERN'], $uri, $matches)) {
             return [false, []];
         }
@@ -25,9 +22,7 @@ trait TraitRouter
         array_shift($matches);
 
         $params = [];
-        $keys   = $route['KEYS'];
-
-        $keys = $keys ?? [];
+        $keys   = $route['KEYS'] ?? [];
 
         $matches = \array_slice(
             $matches,
@@ -36,41 +31,13 @@ trait TraitRouter
         );
 
         // security anti crash
-        if (\count($keys) !== \count($matches)) {
+        if (\count($keys) !== \count($matches)) {     
             return [false, []];
         }
 
         $params = $keys ? array_combine($keys, $matches) : [];
-
+       
         return [true, $params];
-    }
-
-    private function getPattern(array $route): array
-    {
-        preg_match_all(
-            $this->regexRoutes,
-            $route['PATH'],
-            $keys
-        );
-
-        $pattern = preg_replace_callback(
-             $this->regexRoutes,
-            function ($m) use ($route) {
-                $param = $m[1];
-
-                if (isset($route["WHERE"][$param])) {
-                    return "({$route['WHERE'][$param]})";
-                }
-
-                return isset($m[2]) ? "({$m[2]})" : $this->defaultRegex;
-            },
-            $route['PATH']
-        );
-
-        return [
-            "pattern" => "#^$pattern$#",
-            "keys"    => $keys[1] ?? [],
-        ];
     }
 
     private function normalizePath(string $path): string
@@ -110,20 +77,30 @@ trait TraitRouter
 
     private function normalizeMiddleware(array $middleware): Definition
     {
-      
-        return $this->parse(
+     
+      return $this->parse(
             $middleware,
             $this->middlewareNamespace
         );
     }
 
     private function resolveDefinition(array $definition,mixed $runtime):mixed{
-         
-        if($definition['type'] ===  DefinitionType::Closure){
+        $define = [];
+        foreach($definition as $def){
+         $define = \is_array($def) ? $def : $definition;   
+
+        if($define['type'] ===  DefinitionType::Closure){
             return $runtime;
+        }elseif($define['type'] === DefinitionType::Null){
+            return null;
         }
 
-        return $definition['execute'];
+        return $define['execute'];
+          
+        }
+
+        return null;
+       
     }
 
     private function collectGroupMiddleware(): array

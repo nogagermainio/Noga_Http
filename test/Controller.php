@@ -4,7 +4,7 @@ namespace Test;
 class Controller{
     public static function index(){
         return \response()
-        ->json([request()->name()]);
+        ->json([request()->ip()]);
     }
 
     public static function home(int $id){

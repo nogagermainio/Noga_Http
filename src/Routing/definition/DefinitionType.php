@@ -1,5 +1,5 @@
 <?php
-namespace Src\Routes\Definition;
+namespace Src\Routing\Definition;
 enum DefinitionType: string {
     case Closure = 'closure';
     case Classes = 'class';

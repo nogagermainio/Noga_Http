@@ -3,7 +3,7 @@ namespace Src\Routing\Pipeline;
 
 use Closure;
 use Src\Container\Container;
-use Src\Exception\ClassNotFoundException;
+use Src\Exceptions\ClassNotFoundException;
 
 
 class Pipeline
@@ -49,19 +49,43 @@ class Pipeline
      * @param array $data
      * @param Closure $next
      */
-    private function executeMiddleware(array|Closure $middleware, array $params, array $data, Closure $next):mixed
+    private function executeMiddleware(mixed $middleware, array $params, array $data, Closure $next):mixed
     {
-        
-        if (\is_array($middleware)) {
 
-            [$class, $method] = $middleware;
+    if ($middleware instanceof Closure) {
+        return $middleware($params,$data,$next);
+    }
+    
+    if (\is_string($middleware) && function_exists($middleware)) {
+        return $middleware($params,$data,$next);
+    }
 
-            $instance = $this->container->get($class);
+    if (\is_array($middleware)) {
+        $class = $middleware[0] ?? "";
+        $method = $middleware[1] ?? "";
 
-            return $instance->$method($params, $data, $next);
+        if (!class_exists($class)) {
+            throw new ClassNotFoundException("Undefined class {$class}");
         }
 
-        return $middleware($params,$data,$next);
+        $instance = $this->container->get($class);
+
+        return $method
+            ? $instance->$method($params,$data,$next)
+            : $instance($params,$data,$next);
+    }
+
+    // 4. invokable class
+    if (\is_string($middleware) && class_exists($middleware)) {
+
+        $instance = $this->container->get($middleware);
+
+        if (is_callable($instance)) {
+            return $instance($params,$data,$next);
+        }
+    }
+
+    throw new \Src\Exceptions\ControllerHttpException("Invalid controller type");
     }
 
     /**
@@ -78,14 +102,14 @@ class Pipeline
     if ($controller instanceof Closure) {
         return $controller(...$args);
     }
-
+    
     if (\is_string($controller) && function_exists($controller)) {
         return $controller(...$args);
     }
 
     if (\is_array($controller)) {
-
-        [$class, $method] = $controller;
+        $class = $controller[0] ?? "";
+        $method = $controller[1] ?? "";
 
         if (!class_exists($class)) {
             throw new ClassNotFoundException("Undefined class {$class}");
@@ -108,7 +132,8 @@ class Pipeline
         }
     }
 
-    throw new \Src\Exception\ControllerHttpException("Invalid controller type");
+    throw new \Src\Exceptions\ControllerHttpException("Invalid controller type");
 }
+
 
 }

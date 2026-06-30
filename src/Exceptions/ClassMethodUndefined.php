@@ -1,5 +1,5 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 class ClassMethodUndefined extends HttpException{ 
     public function __construct(string $message)

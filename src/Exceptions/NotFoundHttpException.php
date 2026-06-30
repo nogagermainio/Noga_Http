@@ -1,5 +1,5 @@
 <?php
-namespace Src\Exception;
+namespace Src\Exceptions;
 
 class NotFoundHttpException extends HttpException{
     public function __construct(string $message = "Not Found")
